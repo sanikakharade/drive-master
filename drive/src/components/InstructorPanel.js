@@ -1,135 +1,136 @@
-// src/components/InstructorPanel.js
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { firestore } from '../firebase';
-import { Pie } from 'react-chartjs-2';
-import {
-    Chart as ChartJS,
-    ArcElement,
-    Tooltip,
-    Legend,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title
-} from 'chart.js';
-
-ChartJS.register(
-    ArcElement,
-    Tooltip,
-    Legend,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title
-);
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import Moment from 'react-moment';
+import MapmyIndiaMap from 'mapmyindia-react';  // Import the default export
 
 function InstructorPanel() {
     const [students, setStudents] = useState([]);
+    const [selectedStudent, setSelectedStudent] = useState(null);
+    const [sessionDetails, setSessionDetails] = useState({ date: new Date(), score: '', feedback: '' });
     const [sessions, setSessions] = useState([]);
-    const mapContainerRef = useRef(null);
 
     useEffect(() => {
         const fetchStudents = async () => {
             const studentsSnapshot = await firestore.collection('students').get();
-            setStudents(studentsSnapshot.docs.map(doc => doc.data()));
+            setStudents(studentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         };
 
         fetchStudents();
     }, []);
 
-    const handleSessionUpdate = async (sessionId, updatedData) => {
-        await firestore.collection('sessions').doc(sessionId).update(updatedData);
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setSessionDetails({ ...sessionDetails, [name]: value });
     };
 
-    useEffect(() => {
-        const initializeMap = () => {
-            if (window.L) {
-                const map = new window.L.Map(mapContainerRef.current, {
-                    center: [28.6139, 77.2090],
-                    zoom: 10
-                });
-                window.L.tileLayer('https://apis.mapmyindia.com/advancedmaps/v1/fe59820a56b82c5fff493c19301fab25/tiles/{z}/{x}/{y}.png').addTo(map);
-            }
-        };
+    const handleDateChange = (date) => {
+        setSessionDetails({ ...sessionDetails, date });
+    };
 
-        if (document.readyState === 'complete') {
-            initializeMap();
-        } else {
-            window.addEventListener('load', initializeMap);
-            return () => window.removeEventListener('load', initializeMap);
+    const handleLogSession = async () => {
+        if (selectedStudent) {
+            await firestore.collection('sessions').add({ ...sessionDetails, studentId: selectedStudent.id });
+            setSessions([...sessions, { ...sessionDetails, studentId: selectedStudent.id }]);
+            setSessionDetails({ date: new Date(), score: '', feedback: '' });
         }
-    }, []);
-
-    const speedData = {
-        labels: ['Good', 'Moderate', 'Bad'],
-        datasets: [
-            {
-                data: [60, 30, 10],
-                backgroundColor: ['#36A2EB', '#FFCE56', '#FF6384'],
-            },
-        ],
     };
 
-    const steeringControlData = {
-        labels: ['Good', 'Moderate', 'Bad'],
-        datasets: [
-            {
-                data: [70, 20, 10],
-                backgroundColor: ['#36A2EB', '#FFCE56', '#FF6384'],
-            },
-        ],
-    };
-
-    const accelerationData = {
-        labels: ['Good', 'Moderate', 'Bad'],
-        datasets: [
-            {
-                data: [50, 40, 10],
-                backgroundColor: ['#36A2EB', '#FFCE56', '#FF6384'],
-            },
-        ],
+    const handleSelectStudent = async (student) => {
+        setSelectedStudent(student);
+        const sessionsSnapshot = await firestore.collection('sessions').where('studentId', '==', student.id).get();
+        setSessions(sessionsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     };
 
     return (
-        <div className="p-4">
-            <h2 className="text-2xl mb-4">Instructor Panel</h2>
-            <div className="mb-4">
-                <h3 className="text-xl">Assigned Students</h3>
-                {students.map(student => (
-                    <div key={student.id}>
-                        <p>Name: {student.name}</p>
-                        <p>Email: {student.email}</p>
-                    </div>
-                ))}
+        <div className="p-6">
+            <h1 className="text-2xl font-bold mb-4">Instructor Panel</h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="bg-white p-4 rounded shadow">
+                    <h2 className="text-xl font-bold mb-2">Assigned Students</h2>
+                    <table className="w-full bg-white rounded shadow">
+                        <thead>
+                            <tr className="border-b">
+                                <th className="py-2 px-4 text-left">Student Name</th>
+                                <th className="py-2 px-4 text-left">Email</th>
+                                <th className="py-2 px-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {students.map(student => (
+                                <tr key={student.id} className="border-b">
+                                    <td className="py-2 px-4">{student.name}</td>
+                                    <td className="py-2 px-4">{student.email}</td>
+                                    <td className="py-2 px-4">
+                                        <button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={() => handleSelectStudent(student)}>View Sessions</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                <div className="bg-white p-4 rounded shadow">
+                    <h2 className="text-xl font-bold mb-2">Log Session</h2>
+                    <input
+                        type="text"
+                        name="score"
+                        placeholder="Score"
+                        value={sessionDetails.score}
+                        onChange={handleInputChange}
+                        className="mb-2 p-2 border border-gray-400 w-full"
+                    />
+                    <textarea
+                        name="feedback"
+                        placeholder="Feedback"
+                        value={sessionDetails.feedback}
+                        onChange={handleInputChange}
+                        className="mb-2 p-2 border border-gray-400 w-full"
+                    />
+                    <DatePicker
+                        selected={sessionDetails.date}
+                        onChange={handleDateChange}
+                        className="mb-2 p-2 border border-gray-400 w-full"
+                    />
+                    <button onClick={handleLogSession} className="p-2 bg-green-500 text-white rounded">Log Session</button>
+                </div>
             </div>
             <div className="mb-4">
-                <h3 className="text-xl">Driving Sessions</h3>
-                {sessions.map(session => (
-                    <div key={session.id}>
-                        <p>Date: {session.date}</p>
-                        <p>Route: {session.route}</p>
-                        <input type="text" defaultValue={session.score} onChange={(e) => handleSessionUpdate(session.id, { score: e.target.value })} />
+                <h2 className="text-xl font-bold mb-2">Student Sessions</h2>
+                {selectedStudent && (
+                    <div>
+                        <h3 className="text-lg font-bold">Sessions for {selectedStudent.name}</h3>
+                        <table className="w-full bg-white rounded shadow">
+                            <thead>
+                                <tr className="border-b">
+                                    <th className="py-2 px-4 text-left">Date</th>
+                                    <th className="py-2 px-4 text-left">Score</th>
+                                    <th className="py-2 px-4 text-left">Feedback</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {sessions.map(session => (
+                                    <tr key={session.id} className="border-b">
+                                        <td className="py-2 px-4"><Moment format="YYYY/MM/DD">{session.date.toDate()}</Moment></td>
+                                        <td className="py-2 px-4">{session.score}</td>
+                                        <td className="py-2 px-4">{session.feedback}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
-                ))}
+                )}
             </div>
-            <div id="map" ref={mapContainerRef} style={{ height: '400px', width: '100%' }}></div>
-            <div>
-                <h3 className="text-xl">Statistics</h3>
-                <div className="flex justify-around">
-                    <div>
-                        <h4 className="text-lg">Speed</h4>
-                        <Pie data={speedData} />
-                    </div>
-                    <div>
-                        <h4 className="text-lg">Steering Control</h4>
-                        <Pie data={steeringControlData} />
-                    </div>
-                    <div>
-                        <h4 className="text-lg">Acceleration</h4>
-                        <Pie data={accelerationData} />
-                    </div>
+            <div className="mb-4">
+                <h2 className="text-xl font-bold mb-2">Map</h2>
+                <div className="h-96">
+                    <MapmyIndiaMap
+                        width="100%"
+                        height="100%"
+                        center={[28.6139, 77.2090]}
+                        zoom="10"
+                        apiKey="fe59820a56b82c5fff493c19301fab25"
+                    />
                 </div>
             </div>
         </div>

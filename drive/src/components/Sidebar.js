@@ -13,6 +13,7 @@ function Sidebar() {
                 <Link to="/admin/users" className="block py-2 px-4 hover:bg-gray-600">Users</Link>
                 <Link to="/admin/instructors" className="block py-2 px-4 hover:bg-gray-600">Instructors</Link>
                 <Link to="/admin/sessions" className="block py-2 px-4 hover:bg-gray-600">Sessions</Link>
+                <Link to="/admin/ad-management" className="block py-2 px-4 hover:bg-gray-600">Ad Management</Link>
             </nav>
         </div>
     );

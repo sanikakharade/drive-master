@@ -6,6 +6,7 @@ import Dashboard from './Dashboard';
 import Users from './Users';
 import Instructors from './Instructors';
 import Sessions from './Sessions';
+import AdManagement from './AdManagement';
 
 function AdminDashboard() {
     return (
@@ -17,6 +18,7 @@ function AdminDashboard() {
                     <Route path="/users" element={<Users />} />
                     <Route path="/instructors" element={<Instructors />} />
                     <Route path="/sessions" element={<Sessions />} />
+                    <Route path="/ad-management" element={<AdManagement />} />
                 </Routes>
             </div>
         </div>

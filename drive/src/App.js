@@ -24,7 +24,6 @@ function App() {
             <Route path="/user" element={<UserPanel />} />
             <Route path="/instructor" element={<InstructorPanel />} />
             <Route path="/admin/*" element={<AdminDashboard />} />
-            <Route path="/admin/ad-management" element={<AdManagement />} />
           </Routes>
         </main>
         <Footer />
