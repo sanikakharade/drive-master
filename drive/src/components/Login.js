@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [name, setName] = useState(''); // New state for name
     const [isAdmin, setIsAdmin] = useState(false);
     const [isRegistered, setIsRegistered] = useState(true); // To switch between login and registration forms
     const navigate = useNavigate();
@@ -33,6 +34,7 @@ function Login() {
 
             await firestore.collection('users').doc(userId).set({
                 email,
+                name, // Save name in the database
                 isAdmin
             });
 
@@ -99,6 +101,13 @@ function Login() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Password"
+                    />
+                    <input
+                        className="mb-2 p-2 border border-gray-400 w-full max-w-sm"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Name"
                     />
                     <button onClick={handleRegister} className="p-2 bg-blue-500 text-white w-full max-w-sm mb-4">Register</button>
                     <p>Have an account? <span onClick={() => setIsRegistered(true)} className="text-blue-500 cursor-pointer">Login</span></p>
