@@ -53,7 +53,7 @@ function UserPanel() {
 
     useEffect(() => {
         const initializeMap = () => {
-            if (window.L && window.MapmyIndia && mapContainerRef.current) {
+            if (window.L && window.MapmyIndia) {
                 const map = new window.MapmyIndia.Map(mapContainerRef.current, {
                     center: [28.6139, 77.2090],
                     zoom: 10
@@ -68,7 +68,7 @@ function UserPanel() {
                     console.error('Map or addLayer method is not available.');
                 }
             } else {
-                console.error('Leaflet or MapmyIndia is not loaded or map container is not available.');
+                console.error('Leaflet or MapmyIndia is not loaded.');
             }
         };
 
@@ -204,34 +204,57 @@ function UserPanel() {
                     onChange={(e) => setDestination(e.target.value)}
                     className="mb-2 p-2 border border-gray-400 w-full"
                 />
-                <button onClick={handleNavigation} className="bg-blue-500 text-white p-2 rounded">
-                    Navigate
-                </button>
+                <button onClick={handleNavigation} className="p-2 bg-blue-500 text-white w-full md:w-auto">Start Navigation</button>
             </div>
-            <div className="mb-4">
-                <h3 className="text-xl">Map</h3>
-                <div
-                    ref={mapContainerRef}
-                    style={{ height: '400px', width: '100%' }}
-                    className="border border-gray-400"
-                />
+            <div id="map" ref={mapContainerRef} className="h-64 md:h-96 w-full mb-4"></div>
+            <div>
+                <h3 className="text-xl mt-4">Statistics</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <h4 className="text-lg">Breaking</h4>
+                        <Line data={breakingData} />
+                    </div>
+                    <div>
+                        <h4 className="text-lg">Acceleration</h4>
+                        <Line data={accelerationData} />
+                    </div>
+                    <div>
+                        <h4 className="text-lg">Steering</h4>
+                        <Line data={steeringData} />
+                    </div>
+                    <div>
+                        <h4 className="text-lg">Speeding</h4>
+                        <Line data={speedingData} />
+                    </div>
+                    <div>
+                        <h4 className="text-lg">Monitoring</h4>
+                        <Line data={monitoringData} />
+                    </div>
+                </div>
             </div>
-            <div className="mb-4">
-                <h3 className="text-xl">Charts</h3>
-                <div className="mb-4">
-                    <Line data={breakingData} />
-                </div>
-                <div className="mb-4">
-                    <Line data={accelerationData} />
-                </div>
-                <div className="mb-4">
-                    <Line data={steeringData} />
-                </div>
-                <div className="mb-4">
-                    <Line data={speedingData} />
-                </div>
-                <div className="mb-4">
-                    <Line data={monitoringData} />
+            <div className="mt-4">
+                <h3 className="text-xl">Detailed Statistics</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                    <div className="p-4 bg-white rounded shadow">
+                        <h4 className="text-lg">Distance</h4>
+                        <p className="text-2xl">5.3 Km</p>
+                    </div>
+                    <div className="p-4 bg-white rounded shadow">
+                        <h4 className="text-lg">Run Time</h4>
+                        <p className="text-2xl">00:11 Hr</p>
+                    </div>
+                    <div className="p-4 bg-white rounded shadow">
+                        <h4 className="text-lg">Max Speed</h4>
+                        <p className="text-2xl">60 km/hr</p>
+                    </div>
+                    <div className="p-4 bg-white rounded shadow">
+                        <h4 className="text-lg">Avg Speed</h4>
+                        <p className="text-2xl">26.51 km/hr</p>
+                    </div>
+                    <div className="p-4 bg-white rounded shadow">
+                        <h4 className="text-lg">Stoppage Time</h4>
+                        <p className="text-2xl">16:51 Hr</p>
+                    </div>
                 </div>
             </div>
         </div>
